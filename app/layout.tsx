@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { FAQ } from "@/components/SeoContent";
+import SiteFooter from "@/components/SiteFooter";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

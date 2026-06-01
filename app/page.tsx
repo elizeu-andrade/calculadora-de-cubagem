@@ -28,11 +28,6 @@ export default function Home() {
 
       <CubageCalculator />
       <SeoContent />
-
-      <footer className="mt-12 flex items-center justify-center gap-2 border-t border-slate-200 pt-6 text-center text-xs text-slate-400">
-        <BoxIcon className="h-4 w-4" />
-        Cálculo feito 100% no seu navegador. Nenhum dado é enviado a servidores.
-      </footer>
     </main>
   );
 }
