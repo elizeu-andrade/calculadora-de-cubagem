@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { FAQ } from "@/components/SeoContent";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
-
-const SITE_URL = "https://calcularcubagem.com.br";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,6 +28,21 @@ export const metadata: Metadata = {
     siteName: "Calculadora de Cubagem",
     locale: "pt_BR",
     type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Calculadora de Cubagem — peso taxável de frete",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Calculadora de Cubagem — Peso Taxável de Frete",
+    description:
+      "Descubra em segundos o peso taxável da sua carga para cotar o frete pelo valor certo.",
+    images: ["/og.png"],
   },
   robots: { index: true, follow: true },
 };
