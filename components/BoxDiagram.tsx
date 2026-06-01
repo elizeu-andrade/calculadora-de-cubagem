@@ -20,6 +20,21 @@ const COS = Math.cos(ANGLE_RAD);
 const SIN = Math.sin(ANGLE_RAD);
 const DEPTH_SCALE = 0.58; // comprimento parece mais curto na projeção
 
+// Área de desenho fixa: a moldura (viewBox) NÃO muda de tamanho.
+// O cubo é escalado para preencher esta área mantendo a proporção real C×L×A.
+const AREA_W = 150;
+const AREA_H = 120;
+
+// Margens fixas para cotas e labels (mantêm a moldura estática)
+const ML = 52;  // esquerda  (label Altura)
+const MB = 38;  // baixo     (label Largura)
+const MT = 30;  // cima      (espaço p/ a cota de Comprimento fora da caixa)
+const MR = 68;  // direita   (label Comprimento)
+
+// viewBox constante — o módulo é estático
+const vw = ML + AREA_W + MR;
+const vh = MT + AREA_H + MB;
+
 export default function BoxDiagram({ comprimento, largura, altura }: BoxDiagramProps) {
   const c = parse(comprimento) || 50;
   const l = parse(largura)     || 40;
@@ -32,22 +47,24 @@ export default function BoxDiagram({ comprimento, largura, altura }: BoxDiagramP
   const dx0 = dd0 * COS;
   const dy0 = dd0 * SIN; // positivo = sobe na tela (SVG y inverte mais tarde)
 
-  // Escala para caber em 150×120 px
-  const sc = Math.min(150 / (fw0 + dx0), 120 / (fh0 + dy0));
+  // Footprint da projeção (largura/altura do bounding box do cubo)
+  const fpw = fw0 + dx0;
+  const fph = fh0 + dy0;
+
+  // Escala para PREENCHER a área fixa mantendo a proporção real
+  const sc = Math.min(AREA_W / fpw, AREA_H / fph);
   const fw = fw0 * sc;
   const fh = fh0 * sc;
   const dx = dx0 * sc;
   const dy = dy0 * sc;
 
-  // Margens para cotas e labels
-  const ML = 52;  // esquerda  (label Altura)
-  const MB = 38;  // baixo     (label Largura)
-  const MT = 18;  // cima
-  const MR = 68;  // direita   (label Comprimento)
+  // Bounding box do cubo já escalado
+  const bw = fpw * sc;
+  const bh = fph * sc;
 
-  // Canto frontal inferior-esquerdo
-  const ox = ML;
-  const oy = MT + dy + fh;
+  // Canto frontal inferior-esquerdo — cubo centralizado na área fixa
+  const ox = ML + (AREA_W - bw) / 2;
+  const oy = MT + (AREA_H + bh) / 2;
 
   // 7 pontos visíveis da caixa
   // Frente: A(topo-esq) B(topo-dir) C(baixo-dir) D(baixo-esq)
@@ -60,9 +77,6 @@ export default function BoxDiagram({ comprimento, largura, altura }: BoxDiagramP
   const Fx = Bx + dx, Fy = By - dy;
   const Gx = Cx + dx, Gy = Cy - dy;
 
-  const vw = ML + fw + dx + MR;
-  const vh = MT + dy + fh + MB;
-
   // ── Cotas ──────────────────────────────────────────────────────────────────
 
   // Altura: linha vertical à esquerda
@@ -73,17 +87,26 @@ export default function BoxDiagram({ comprimento, largura, altura }: BoxDiagramP
   const wy = oy + 9;           // y da linha de cota
   const wTick = 7;
 
-  // Comprimento: extensão diagonal além dos cantos B e F
-  const EXT = 12;              // quantos px além do canto
-  const B1x = Bx + EXT * COS, B1y = By - EXT * SIN;  // tick de B
-  const F1x = Fx + EXT * COS, F1y = Fy - EXT * SIN;  // tick de F
-  // midpoint da cota de comprimento
-  const cmx = (B1x + F1x) / 2;
-  const cmy = (B1y + F1y) / 2;
-  // offset perpendicular para afastar o label da cota (para cima/esq, fora da caixa)
-  const LOFF = 11;
-  const labCx = cmx - SIN * LOFF;
-  const labCy = cmy - COS * LOFF;
+  // Comprimento: cota FORA da caixa, paralela à aresta de profundidade B–F,
+  // deslocada para cima/esquerda e ligada aos vértices por linhas de extensão.
+  const PNX = -SIN, PNY = -COS;   // perpendicular à profundidade, apontando p/ fora (cima-esq)
+  const COFF = 15;                // afastamento da linha de cota em relação à aresta
+  const COVS = 3;                 // quanto a linha de extensão passa além da cota
+  const CGAP = 2;                 // folga entre o vértice e o início da linha de extensão
+  // Linha de cota (paralela a B–F, deslocada para fora)
+  const Bcx = Bx + PNX * COFF, Bcy = By + PNY * COFF;
+  const Fcx = Fx + PNX * COFF, Fcy = Fy + PNY * COFF;
+  // Linhas de extensão (dos vértices B e F até um pouco além da cota)
+  const Bex0 = Bx + PNX * CGAP, Bey0 = By + PNY * CGAP;
+  const Bex1 = Bx + PNX * (COFF + COVS), Bey1 = By + PNY * (COFF + COVS);
+  const Fex0 = Fx + PNX * CGAP, Fey0 = Fy + PNY * CGAP;
+  const Fex1 = Fx + PNX * (COFF + COVS), Fey1 = Fy + PNY * (COFF + COVS);
+  // Rótulo acima da linha de cota
+  const cmx = (Bcx + Fcx) / 2;
+  const cmy = (Bcy + Fcy) / 2;
+  const LOFF = 10;
+  const labCx = cmx + PNX * LOFF;
+  const labCy = cmy + PNY * LOFF;
 
   return (
     <svg
@@ -129,10 +152,10 @@ export default function BoxDiagram({ comprimento, largura, altura }: BoxDiagramP
         <line x1={ox} y1={wy} x2={ox + fw} y2={wy}
           markerStart="url(#seta-box)" markerEnd="url(#seta-box)" />
 
-        {/* Comprimento: extensão diagonal + linha com setas */}
-        <line x1={Bx} y1={By} x2={B1x} y2={B1y} />
-        <line x1={Fx} y1={Fy} x2={F1x} y2={F1y} />
-        <line x1={B1x} y1={B1y} x2={F1x} y2={F1y}
+        {/* Comprimento: linhas de extensão dos vértices + cota fora da caixa */}
+        <line x1={Bex0} y1={Bey0} x2={Bex1} y2={Bey1} />
+        <line x1={Fex0} y1={Fey0} x2={Fex1} y2={Fey1} />
+        <line x1={Bcx} y1={Bcy} x2={Fcx} y2={Fcy}
           markerStart="url(#seta-box)" markerEnd="url(#seta-box)" />
       </g>
 

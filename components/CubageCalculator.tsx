@@ -17,6 +17,20 @@ function paraNumero(texto: string): number {
   return Number(texto.replace(",", "."));
 }
 
+/**
+ * Mantém apenas dígitos e um único separador decimal (vírgula ou ponto).
+ * Remove letras, sinais e separadores extras enquanto o usuário digita.
+ */
+function somenteNumero(texto: string): string {
+  let limpo = texto.replace(/[^\d.,]/g, "");
+  // Permite no máximo um separador decimal — preserva o primeiro.
+  const i = limpo.search(/[.,]/);
+  if (i !== -1) {
+    limpo = limpo.slice(0, i + 1) + limpo.slice(i + 1).replace(/[.,]/g, "");
+  }
+  return limpo;
+}
+
 const MODOS: {
   id: Modo;
   titulo: string;
@@ -175,7 +189,7 @@ function Campo({ label, valor, onChange, unidade, ajuda }: CampoProps) {
           type="text"
           inputMode="decimal"
           value={valor}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(somenteNumero(e.target.value))}
           placeholder="0"
           className={`w-full rounded-lg border border-slate-300 py-2 pl-3 text-slate-800 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 ${
             unidade ? "pr-10" : "pr-3"
