@@ -15,3 +15,6 @@ npm-debug.log*
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# instruções locais do Claude Code (não versionar)
+CLAUDE.md
