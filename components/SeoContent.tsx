@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ARTIGOS } from "@/lib/artigos";
+
 export const FAQ = [
   {
     pergunta: "O que é cubagem?",
@@ -68,6 +71,22 @@ export default function SeoContent() {
             </div>
           ))}
         </dl>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-800">Aprenda mais sobre cubagem</h2>
+        <ul className="space-y-2">
+          {ARTIGOS.map((artigo) => (
+            <li key={artigo.slug}>
+              <Link
+                href={`/artigos/${artigo.slug}/`}
+                className="text-brand-600 hover:underline"
+              >
+                {artigo.titulo}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
     </article>
   );

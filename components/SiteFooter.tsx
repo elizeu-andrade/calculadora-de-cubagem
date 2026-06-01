@@ -3,6 +3,7 @@ import { BoxIcon } from "@/components/icons";
 
 const links = [
   { href: "/", label: "Calculadora" },
+  { href: "/artigos/", label: "Artigos" },
   { href: "/sobre/", label: "Sobre" },
   { href: "/contato/", label: "Contato" },
   { href: "/politica-de-privacidade/", label: "Política de Privacidade" },
